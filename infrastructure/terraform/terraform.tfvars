@@ -4,8 +4,8 @@ project_name = "youtube-clone"
 
 environment = "dev"
 
-instance_type = "t2.micro"
+instance_type = "t3.micro"
 
 key_name = "youtube-key"
 
-my_ip = "49.207.62.89/32"
+my_ip = "49.207.56.77/32"

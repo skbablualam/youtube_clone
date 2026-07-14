@@ -29,11 +29,12 @@ data "aws_ami" "ubuntu" {
 
 resource "aws_instance" "minikube" {
 
-  ami                    = data.aws_ami.ubuntu.id
-  instance_type          = var.instance_type
-  subnet_id              = var.subnet_id
-  key_name               = var.key_name
+  ami                         = data.aws_ami.ubuntu.id
+  instance_type               = var.instance_type
+  subnet_id                   = var.subnet_id
+  key_name                    = var.key_name
   associate_public_ip_address = true
+  monitoring                  = true
 
   vpc_security_group_ids = [
     var.security_group_id

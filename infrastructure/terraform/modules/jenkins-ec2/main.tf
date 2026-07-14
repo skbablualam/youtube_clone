@@ -33,6 +33,8 @@ resource "aws_instance" "jenkins" {
 
   instance_type = var.instance_type
 
+  monitoring = true
+
   subnet_id = var.subnet_id
 
   key_name = var.key_name

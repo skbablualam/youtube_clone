@@ -152,10 +152,51 @@ resource "aws_security_group" "minikube_sg" {
 
     cidr_blocks = ["0.0.0.0/0"]
   }
+  ###########################################################
+  # Kubernetes API
+  ###########################################################
 
+  ingress {
+
+    description = "Kubernetes API"
+
+    from_port = 6443
+    to_port   = 6443
+    protocol  = "tcp"
+
+    cidr_blocks = [var.my_ip]
+  }
+  ###########################################################
+  # Prometheus
+  ###########################################################
+
+  ingress {
+
+    description = "Prometheus"
+
+    from_port = 9090
+    to_port   = 9090
+    protocol  = "tcp"
+
+    cidr_blocks = [var.my_ip]
+  }
   ###########################################################
   # Outbound
   ###########################################################
+  ###########################################################
+  # Grafana
+  ###########################################################
+
+  ingress {
+
+    description = "Grafana"
+
+    from_port = 3000
+    to_port   = 3000
+    protocol  = "tcp"
+
+    cidr_blocks = [var.my_ip]
+  }
 
   egress {
 
