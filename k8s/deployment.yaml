@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: youtube-clone
+  namespace: youtube
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: youtube
+
+  template:
+    metadata:
+      labels:
+        app: youtube
+
+    spec:
+      containers:
+      - name: youtube-clone
+        image: IMAGE_NAME
+        imagePullPolicy: Always
+        
+        ports:
+        - containerPort: 80
