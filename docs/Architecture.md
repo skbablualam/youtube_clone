@@ -1,4 +1,59 @@
 # Architecture
+```text
+                GitHub
+                   │
+                Webhook
+                   │
+                   ▼
+         Jenkins (AWS EC2)
+                   │
+        CI/CD Pipeline
+                   │
+      Docker Build & Push
+                   │
+             SSH to Mac
+                   │
+                   ▼
+         Minikube (MacBook)
+                   │
+             Kubernetes
+                   │
+                   ▼
+          React YouTube Clone
+                   │
+        Prometheus + Grafana
+```        
+```text
+Developer
+     │
+     ▼
+GitHub
+     │
+Webhook
+     ▼
+Jenkins (AWS EC2)
+     │
+     ├── npm install
+     ├── npm test
+     ├── SonarCloud
+     ├── Trivy
+     ├── Docker Build
+     ├── Docker Push
+     └── SSH
+             │
+             ▼
+      MacBook Pro
+        Minikube
+             │
+             ▼
+      Kubernetes
+             │
+             ▼
+      React YouTube Clone
+             │
+             ▼
+     Prometheus + Grafana
+```
 ![alt text](../538f2e2e-f628-4e7a-8bcb-1a61d6bd294a.png)
 
 ```text
