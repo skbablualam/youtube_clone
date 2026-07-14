@@ -1,3 +1,6 @@
+# Architecture
+
+```text
 Developer
      │
      ▼
@@ -37,3 +40,4 @@ Jenkins EC2
              │
              ▼
       Amazon CloudWatch
+```
