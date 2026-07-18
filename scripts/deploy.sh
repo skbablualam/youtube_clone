@@ -1,128 +1,57 @@
 #!/bin/bash
 
-###############################################################################
-# Script Name : deploy.sh
-# Description : Deploy YouTube Clone to Kubernetes (Minikube)
-# Author      : Bablu Alam
-###############################################################################
-
-set -e
-
-echo "========================================================="
-echo " Starting Deployment..."
-echo "========================================================="
-
-###############################################################################
-# Variables
-###############################################################################
+set -euo pipefail
 
 NAMESPACE="youtube"
-
 APP_NAME="youtube-clone"
-
-DOCKER_USERNAME="YOUR_DOCKERHUB_USERNAME"
-
-IMAGE_NAME="${DOCKER_USERNAME}/${APP_NAME}"
-
-IMAGE_TAG=${BUILD_NUMBER:-latest}
-
+IMAGE_TAG="${IMAGE_TAG:-local}"
+IMAGE_NAME="${IMAGE_NAME:-${APP_NAME}}"
 FULL_IMAGE="${IMAGE_NAME}:${IMAGE_TAG}"
 
-echo ""
-echo "Application : ${APP_NAME}"
-echo "Namespace   : ${NAMESPACE}"
-echo "Image       : ${FULL_IMAGE}"
-echo ""
+echo "========================================================="
+echo "Deploying ${APP_NAME} to local Minikube"
+echo "========================================================="
 
-###############################################################################
-# Verify Kubernetes Cluster
-###############################################################################
-
-echo "Checking Kubernetes Cluster..."
-
-kubectl cluster-info
+echo "Namespace : ${NAMESPACE}"
+echo "Image     : ${FULL_IMAGE}"
 
 echo ""
-kubectl get nodes
 
-###############################################################################
-# Create Namespace
-###############################################################################
+if ! command -v kubectl >/dev/null 2>&1; then
+  echo "kubectl is required. Install it first." >&2
+  exit 1
+fi
 
-echo ""
-echo "Creating Namespace (if not exists)..."
+if ! minikube status >/dev/null 2>&1; then
+  echo "Minikube is not running. Start it with: minikube start --driver=docker --memory=4096 --cpus=2" >&2
+  exit 1
+fi
 
+if ! docker info >/dev/null 2>&1; then
+  echo "Docker Desktop must be running." >&2
+  exit 1
+fi
+
+echo "Building Docker image..."
+docker build -t "${FULL_IMAGE}" .
+
+echo "Loading image into Minikube..."
+minikube image load "${FULL_IMAGE}"
+
+echo "Creating namespace..."
 kubectl apply -f k8s/namespace.yaml
 
-###############################################################################
-# Update Deployment Image
-###############################################################################
-
-echo ""
-echo "Updating Deployment Manifest..."
-
-sed -i "s|IMAGE_NAME|${FULL_IMAGE}|g" k8s/deployment.yaml
-
-###############################################################################
-# Deploy Resources
-###############################################################################
-
-echo ""
-echo "Deploying Kubernetes Resources..."
-
+echo "Deploying Kubernetes resources..."
 kubectl apply -f k8s/deployment.yaml
-
 kubectl apply -f k8s/service.yaml
+kubectl apply -f k8s/ingress.yaml >/dev/null 2>&1 || true
 
-kubectl apply -f k8s/ingress.yaml
+echo "Updating deployment image..."
+kubectl set image deployment/${APP_NAME} ${APP_NAME}="${FULL_IMAGE}" -n "${NAMESPACE}"
 
-###############################################################################
-# Wait for Rollout
-###############################################################################
-
-echo ""
-echo "Waiting for Deployment..."
-
-kubectl rollout status deployment/${APP_NAME} \
--n ${NAMESPACE}
-
-###############################################################################
-# Verify Deployment
-###############################################################################
+echo "Waiting for rollout..."
+kubectl rollout status deployment/${APP_NAME} -n "${NAMESPACE}"
 
 echo ""
-echo "Pods"
-
-kubectl get pods -n ${NAMESPACE}
-
-echo ""
-echo "Services"
-
-kubectl get svc -n ${NAMESPACE}
-
-echo ""
-echo "Deployments"
-
-kubectl get deployment -n ${NAMESPACE}
-
-echo ""
-echo "Ingress"
-
-kubectl get ingress -n ${NAMESPACE}
-
-###############################################################################
-# Deployment Summary
-###############################################################################
-
-echo ""
-echo "========================================================="
-echo " Deployment Completed Successfully"
-echo "========================================================="
-
-echo ""
-echo "Application Name : ${APP_NAME}"
-echo "Namespace        : ${NAMESPACE}"
-echo "Docker Image     : ${FULL_IMAGE}"
-
-echo ""
-echo "========================================================="
+echo "Deployment complete."
+echo "Run: minikube service ${APP_NAME}-service -n ${NAMESPACE}"

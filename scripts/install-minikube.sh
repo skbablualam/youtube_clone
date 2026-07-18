@@ -1,118 +1,39 @@
 #!/bin/bash
 
-###############################################################################
-# Script Name : install-minikube.sh
-# Description : Install Docker, kubectl, Minikube, Helm, Prometheus,
-#               Grafana and CloudWatch Agent on Ubuntu 22.04
-#
-# Author      : Bablu Alam
-###############################################################################
+set -euo pipefail
 
-set -e
+if [[ "$OSTYPE" != darwin* ]]; then
+  echo "This script is intended for macOS." >&2
+  exit 1
+fi
 
-echo "=========================================================="
-echo "Updating Ubuntu..."
-echo "=========================================================="
+if ! command -v brew >/dev/null 2>&1; then
+  echo "Homebrew is required. Install it first: https://brew.sh" >&2
+  exit 1
+fi
 
-sudo apt update -y
-sudo apt upgrade -y
+echo "Installing Docker, kubectl, minikube and Helm..."
+brew install --cask docker kubectl minikube helm >/dev/null 2>&1 || true
 
-###############################################################################
-# Install Required Packages
-###############################################################################
+open -a Docker >/dev/null 2>&1 || true
 
-echo "Installing required packages..."
+echo "Waiting for Docker Desktop to start..."
+for _ in {1..30}; do
+  if docker info >/dev/null 2>&1; then
+    break
+  fi
+  sleep 2
+done
 
-sudo apt install -y \
-curl \
-wget \
-git \
-apt-transport-https \
-ca-certificates \
-gnupg \
-lsb-release \
-unzip \
-conntrack
-
-###############################################################################
-# Install Docker
-###############################################################################
-
-echo "Installing Docker..."
-
-sudo apt install -y docker.io
-
-sudo systemctl enable docker
-sudo systemctl start docker
-
-sudo usermod -aG docker ubuntu
-
-docker --version
-
-###############################################################################
-# Install kubectl
-###############################################################################
-
-echo "Installing kubectl..."
-
-curl -LO "https://dl.k8s.io/release/$(curl -L -s \
-https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-
-chmod +x kubectl
-
-sudo mv kubectl /usr/local/bin/
-
-kubectl version --client
-
-###############################################################################
-# Install Minikube
-###############################################################################
-
-echo "Installing Minikube..."
-
-curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-
-sudo install minikube-linux-amd64 /usr/local/bin/minikube
-
-minikube version
-
-###############################################################################
-# Start Minikube
-###############################################################################
+if ! docker info >/dev/null 2>&1; then
+  echo "Docker Desktop did not become ready in time. Please start it manually and rerun this script." >&2
+  exit 1
+fi
 
 echo "Starting Minikube..."
+minikube start --driver=docker --memory=4096 --cpus=2
+minikube addons enable ingress >/dev/null 2>&1 || true
+minikube addons enable metrics-server >/dev/null 2>&1 || true
 
-minikube start \
---driver=docker \
---memory=4096 \
---cpus=2
-
-###############################################################################
-# Enable Addons
-###############################################################################
-
-echo "Enabling Kubernetes Addons..."
-
-minikube addons enable ingress
-minikube addons enable metrics-server
-minikube addons enable dashboard
-
-###############################################################################
-# Install Helm
-###############################################################################
-
-echo "Installing Helm..."
-
-curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-
-helm version
-
-###############################################################################
-# Add Helm Repositories
-###############################################################################
-
-helm repo add prometheus-community \
-https://prometheus-community.github.io/helm-charts
-
-helm repo add grafana \
-https://grafana.github.io/helm
+echo "Minikube is ready."
+echo "Run: ./scripts/deploy.sh"

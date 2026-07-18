@@ -1,163 +1,66 @@
 pipeline {
-
     agent any
 
-    options {
-        timestamps()
-        disableConcurrentBuilds()
-        buildDiscarder(logRotator(numToKeepStr: '10'))
+    triggers {
+        githubPush()
     }
 
     environment {
-
-        APP_NAME = "youtube-clone"
-
-        DOCKER_USERNAME = "YOUR_DOCKERHUB_USERNAME"
-
-        IMAGE_NAME = "${DOCKER_USERNAME}/${APP_NAME}"
-
-        IMAGE_TAG = "${BUILD_NUMBER}"
-
-        K8S_NAMESPACE = "youtube"
-
-        MINIKUBE_HOST = "YOUR_MINIKUBE_PUBLIC_IP"
-
+        APP_NAME = 'youtube-clone'
+        IMAGE_NAME = 'youtube-clone'
+        IMAGE_TAG = env.BUILD_NUMBER ?: 'local'
+        K8S_NAMESPACE = 'youtube'
     }
 
     stages {
-
         stage('Checkout Source') {
-
             steps {
-
-                echo "Checking out source code..."
-
+                echo 'Checking out source code...'
                 checkout scm
-
             }
-
         }
 
         stage('Install Dependencies') {
-
             steps {
-
                 sh 'npm install'
-
             }
-
-        }
-
-        stage('Run Unit Tests') {
-
-            steps {
-
-                sh 'npm test -- --watchAll=false'
-
-            }
-
         }
 
         stage('Build React Application') {
-
             steps {
-
                 sh 'npm run build'
-
             }
-
         }
 
         stage('Build Docker Image') {
-
             steps {
-
-                sh '''
-                docker build \
-                -t ${IMAGE_NAME}:${IMAGE_TAG} .
-                '''
-
+                sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
             }
-
         }
 
-        stage('Push Image to Docker Hub') {
-
+        stage('Load Image Into Minikube') {
             steps {
-
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-creds',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-
-                    sh '''
-
-                    echo $DOCKER_PASS | docker login \
-                    -u $DOCKER_USER \
-                    --password-stdin
-
-                    docker push ${IMAGE_NAME}:${IMAGE_TAG}
-
-                    docker logout
-
-                    '''
-
-                }
-
+                sh "minikube image load ${IMAGE_NAME}:${IMAGE_TAG}"
             }
-
         }
 
         stage('Deploy to Minikube') {
-
             steps {
-
-                sshagent(credentials: ['minikube-ssh']) {
-
-                    sh """
-
-                    ssh -o StrictHostKeyChecking=no ubuntu@${MINIKUBE_HOST} '
-
-                    kubectl set image deployment/youtube-clone \
-                    youtube-clone=${IMAGE_NAME}:${IMAGE_TAG} \
-                    -n ${K8S_NAMESPACE}
-
-                    kubectl rollout status deployment/youtube-clone \
-                    -n ${K8S_NAMESPACE}
-
-                    '
-
-                    """
-
-                }
-
+                sh "kubectl apply -f k8s/namespace.yaml"
+                sh "kubectl apply -f k8s/deployment.yaml"
+                sh "kubectl apply -f k8s/service.yaml"
+                sh "kubectl set image deployment/${APP_NAME} ${APP_NAME}=${IMAGE_NAME}:${IMAGE_TAG} -n ${K8S_NAMESPACE}"
+                sh "kubectl rollout status deployment/${APP_NAME} -n ${K8S_NAMESPACE}"
             }
-
         }
-
     }
 
     post {
-
         success {
-
-            echo "Deployment Successful"
-
+            echo 'Deployment completed successfully.'
         }
-
         failure {
-
-            echo "Pipeline Failed"
-
+            echo 'Deployment failed.'
         }
-
-        always {
-
-            cleanWs()
-
-        }
-
     }
-
 }
