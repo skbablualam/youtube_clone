@@ -136,3 +136,5 @@ helm repo add grafana https://grafana.github.io/helm-charts
 
 - This setup is intended for local development and learning rather than production-grade cloud deployment.
 - The old Terraform and AWS-based infrastructure files have been removed from the main workflow.
+
+## Author
