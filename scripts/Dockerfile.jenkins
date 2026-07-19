@@ -1,0 +1,28 @@
+# scripts/Dockerfile.jenkins
+FROM jenkins/jenkins:lts-jdk21
+
+USER root
+
+# Install prerequisites required by Debian Trixie (removed software-properties-common)
+RUN apt-get update && \
+    apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release wget
+
+# Install Docker CLI (using the modern keyring approach)
+RUN install -m 0755 -d /etc/apt/keyrings && \
+    curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
+    chmod a+r /etc/apt/keyrings/docker.gpg && \
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null && \
+    apt-get update && \
+    apt-get install -y docker-ce-cli
+
+# Install Trivy
+RUN wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --dearmor | tee /usr/share/keyrings/trivy.gpg > /dev/null && \
+    echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | tee -a /etc/apt/sources.list.d/trivy.list && \
+    apt-get update && \
+    apt-get install -y trivy
+
+# Create docker group and add jenkins user
+RUN groupadd -g 999 docker || true && \
+    usermod -aG docker jenkins
+
+USER jenkins
