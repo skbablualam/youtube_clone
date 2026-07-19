@@ -20,7 +20,7 @@ pipeline {
     }
 
     tools {
-        nodejs 'node20' // This must exactly match the name you set in Step 2
+        nodejs 'node20'
     }
 
     stages {
@@ -72,10 +72,10 @@ pipeline {
             steps {
                 echo 'Building React application...'
                 withCredentials([string(credentialsId: 'rapidapi-key', variable: 'SECRET_API_KEY')]) {
-                    sh """
-                    export REACT_APP_RAPID_API_KEY="\$SECRET_API_KEY"
-                    CI=false npm run build
-                    """
+                    // Injecting key securely and disabling CI warnings
+                    withEnv(["REACT_APP_RAPID_API_KEY=${SECRET_API_KEY}"]) {
+                        sh 'CI=false npm run build'
+                    }
                 }
             }
         }
@@ -83,7 +83,6 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 echo 'Building Docker image...'
-
                 sh """
                 docker build \
                   -t ${IMAGE_NAME}:${IMAGE_TAG} \
@@ -95,17 +94,13 @@ pipeline {
         stage('Trivy Image Scan') {
             steps {
                 echo 'Scanning Docker image...'
-
-                sh """
-                trivy image ${IMAGE_NAME}:${IMAGE_TAG} || true
-                """
+                sh "trivy image ${IMAGE_NAME}:${IMAGE_TAG} || true"
             }
         }
 
         stage('Push Image to Docker Hub') {
             steps {
                 echo 'Logging into Docker Hub...'
-
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub',
                     usernameVariable: 'DOCKER_USERNAME',
@@ -124,7 +119,6 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 echo 'Deploying application...'
-
                 sh '''
                 kubectl apply -f k8s/namespace.yaml
                 kubectl apply -f k8s/deployment.yaml
@@ -132,16 +126,8 @@ pipeline {
                 kubectl apply -f k8s/ingress.yaml
                 '''
 
-                sh """
-                kubectl set image deployment/${APP_NAME} \
-                  ${APP_NAME}=${IMAGE_NAME}:${IMAGE_TAG} \
-                  -n ${NAMESPACE}
-                """
-
-                sh """
-                kubectl rollout status deployment/${APP_NAME} \
-                  -n ${NAMESPACE}
-                """
+                sh "kubectl set image deployment/${APP_NAME} ${APP_NAME}=${IMAGE_NAME}:${IMAGE_TAG} -n ${NAMESPACE}"
+                sh "kubectl rollout status deployment/${APP_NAME} -n ${NAMESPACE}"
             }
         }
 
@@ -155,19 +141,15 @@ pipeline {
 
     post {
         success {
-            echo ''
             echo '======================================='
             echo ' Pipeline completed successfully!'
             echo '======================================='
         }
-
         failure {
-            echo ''
             echo '======================================='
             echo ' Pipeline failed!'
             echo '======================================='
         }
-
         always {
             cleanWs()
         }
