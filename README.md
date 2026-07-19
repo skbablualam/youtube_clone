@@ -497,7 +497,7 @@ docker push bablualam/youtube-clone:latest
 Docker Hub Repository
 
 ```
-https://hub.docker.com/r/bablualam/youtube-clone
+https://hub.docker.com/r/skbablualam03031997/youtube_clone
 ```
 
 ---
@@ -665,7 +665,7 @@ This helps detect:
 
 <p align="center">
 
-<img src="images/app-video-player.png" width="100%">
+<img src="images/demo" width="100%">
 
 </p>
 
@@ -716,7 +716,7 @@ A complete walkthrough of the project demonstrating:
 
 <p align="center">
 
-<img src="images/demo.gif" width="100%">
+<img src="images/demo" width="100%">
 
 </p>
 
