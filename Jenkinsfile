@@ -76,7 +76,7 @@ pipeline {
                     export REACT_APP_RAPID_API_KEY="\$SECRET_API_KEY"
                     # Add CI=false to prevent warnings from breaking the build
                     CI=false npm run build
-                    """
+                }   """
             }
         }
 
