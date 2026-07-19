@@ -74,9 +74,9 @@ pipeline {
                 withCredentials([string(credentialsId: 'rapidapi-key', variable: 'SECRET_API_KEY')]) {
                     sh """
                     export REACT_APP_RAPID_API_KEY="\$SECRET_API_KEY"
-                    # Add CI=false to prevent warnings from breaking the build
                     CI=false npm run build
-                }   """
+                    """
+                }
             }
         }
 
@@ -86,8 +86,8 @@ pipeline {
 
                 sh """
                 docker build \
-                -t ${IMAGE_NAME}:${IMAGE_TAG} \
-                -t ${IMAGE_NAME}:latest .
+                  -t ${IMAGE_NAME}:${IMAGE_TAG} \
+                  -t ${IMAGE_NAME}:latest .
                 """
             }
         }
@@ -134,13 +134,13 @@ pipeline {
 
                 sh """
                 kubectl set image deployment/${APP_NAME} \
-                ${APP_NAME}=${IMAGE_NAME}:${IMAGE_TAG} \
-                -n ${NAMESPACE}
+                  ${APP_NAME}=${IMAGE_NAME}:${IMAGE_TAG} \
+                  -n ${NAMESPACE}
                 """
 
                 sh """
                 kubectl rollout status deployment/${APP_NAME} \
-                -n ${NAMESPACE}
+                  -n ${NAMESPACE}
                 """
             }
         }
