@@ -1,142 +1,582 @@
+````markdown
+# 🎬 YouTube Clone - Enterprise DevOps CI/CD Pipeline on Kubernetes
 
-# YouTube Clone - Local Minikube Deployment
+<p align="center">
+  <img src="images/architecture.png" alt="Architecture" width="100%">
+</p>
 
-This repository contains a React-based YouTube clone frontend that is now configured for local Kubernetes deployment on macOS using Minikube.
+<p align="center">
 
-## New architecture
+![React](https://img.shields.io/badge/React-18-blue?logo=react)
+![Docker](https://img.shields.io/badge/Docker-Containerized-blue?logo=docker)
+![Kubernetes](https://img.shields.io/badge/Kubernetes-Minikube-326CE5?logo=kubernetes)
+![Jenkins](https://img.shields.io/badge/Jenkins-CI/CD-D24939?logo=jenkins)
+![Terraform](https://img.shields.io/badge/Terraform-IaC-844FBA?logo=terraform)
+![AWS](https://img.shields.io/badge/AWS-Cloud-FF9900?logo=amazonaws)
+![Prometheus](https://img.shields.io/badge/Prometheus-Monitoring-E6522C?logo=prometheus)
+![Grafana](https://img.shields.io/badge/Grafana-Dashboard-F46800?logo=grafana)
+![License](https://img.shields.io/badge/License-MIT-green)
 
-- GitHub sends updates to Jenkins running locally in Docker
-- Jenkins builds the React app and container image
-- The image is loaded into Minikube on the MacBook
-- The app is deployed to Kubernetes and exposed locally
-- Prometheus and Grafana can be added for monitoring
+</p>
 
-## What changed
+---
 
-- Removed the AWS and Terraform workflow from the main deployment path
-- Simplified the setup for local development on a MacBook
-- Updated the deployment scripts to work with Docker Desktop and Minikube
+# 📌 Project Overview
 
-## Prerequisites
+This project demonstrates a **production-inspired DevOps CI/CD pipeline** for deploying a React-based **YouTube Clone** using modern DevOps tools and cloud-native practices.
 
-Install the following tools on your Mac:
+The application is automatically built, tested, containerized, and deployed to a **Kubernetes cluster (Minikube)** whenever code is pushed to GitHub.
 
-- Docker Desktop
-- Homebrew
-- kubectl
-- Minikube
-- Helm (optional for monitoring)
+The primary goal of this project is to showcase an end-to-end DevOps workflow including:
 
-## Quick start
+- Infrastructure as Code (Terraform)
+- Continuous Integration & Continuous Deployment (Jenkins)
+- Containerization (Docker)
+- Kubernetes Deployments
+- Security Scanning (Trivy)
+- Code Quality Analysis (SonarCloud)
+- Monitoring (Prometheus & Grafana)
+- GitHub Webhooks
+- Local Kubernetes Development using Minikube
 
-1. Install the required tools:
+---
 
-   ```bash
-   brew install --cask docker
-   brew install kubectl minikube helm
-   ```
+# 🏗 Architecture
 
-2. Start Docker Desktop and make sure it is running.
+<p align="center">
+<img src="images/architecture.png" width="100%">
+</p>
 
-3. Start Minikube:
+## Architecture Workflow
 
-   ```bash
-   minikube start --driver=docker --memory=4096 --cpus=2
-   minikube addons enable ingress
-   ```
+```text
+Developer
+     │
+     ▼
+GitHub Repository
+     │
+GitHub Webhook
+     ▼
+Jenkins
+     │
+──────────────────────────────
+Checkout Source Code
+Install Dependencies
+Run Unit Tests
+SonarCloud Analysis
+Trivy Security Scan
+Docker Build
+Docker Push
+──────────────────────────────
+     │
+SSH
+     ▼
+Minikube
+     │
+Kubernetes Deployment
+     │
+Rolling Update
+     ▼
+React YouTube Clone
+     │
+Prometheus
+     │
+Grafana
+```
 
-4. Start Jenkins locally:
+---
 
-   ```bash
-   ./scripts/install-jenkins.sh
-   ```
+# ✨ Features
 
-5. Deploy the application:
+- Fully Automated CI/CD Pipeline
+- Infrastructure as Code using Terraform
+- Dockerized React Application
+- Kubernetes Deployment
+- GitHub Webhook Integration
+- Jenkins Declarative Pipeline
+- SonarCloud Code Analysis
+- Trivy Vulnerability Scanning
+- Rolling Kubernetes Deployment
+- Prometheus Monitoring
+- Grafana Dashboards
+- Production-ready Folder Structure
 
-   ```bash
-   ./scripts/deploy.sh
-   ```
+---
 
-6. Open the app:
+# 🛠 Technology Stack
 
-   ```bash
-   minikube service youtube-clone-service -n youtube
-   ```
+| Category | Tools |
+|-----------|-------|
+| Frontend | ReactJS |
+| Source Code | GitHub |
+| CI/CD | Jenkins |
+| Container | Docker |
+| Orchestration | Kubernetes (Minikube) |
+| Infrastructure | Terraform |
+| Cloud | AWS |
+| Security | Trivy |
+| Code Quality | SonarCloud |
+| Monitoring | Prometheus, Grafana |
+| Scripting | Bash |
+| Operating System | Ubuntu 22.04 |
 
-## Project structure
+---
 
-- [src](src) – React application source code
-- [k8s](k8s) – Kubernetes manifests for the app
-- [scripts](scripts) – setup and deployment helpers
-- [monitoring](monitoring) – Prometheus and Grafana configuration
+# 📂 Project Structure
 
-## Local deployment workflow
+```text
+youtube_clone/
 
-The deployment script will:
+├── src/
+├── public/
+├── k8s/
+│   ├── namespace.yaml
+│   ├── deployment.yaml
+│   ├── service.yaml
+│   └── ingress.yaml
+│
+├── monitoring/
+│   ├── prometheus/
+│   ├── grafana/
+│   ├── cloudwatch/
+│   └── README.md
+│
+├── infrastructure/
+│   ├── bootstrap/
+│   └── terraform/
+│
+├── scripts/
+│   ├── install-jenkins.sh
+│   ├── install-minikube.sh
+│   ├── deploy.sh
+│   └── rollback.sh
+│
+├── docs/
+│   ├── Architecture.md
+│   ├── CI-CD.md
+│   ├── Kubernetes.md
+│   ├── Monitoring.md
+│   └── Terraform.md
+│
+├── Dockerfile
+├── Jenkinsfile
+├── README.md
+└── package.json
+```
 
-- build the Docker image locally
-- load the image into the Minikube Docker environment
-- create the Kubernetes namespace
-- deploy the app and expose it through a service
+---
 
-## Jenkins workflow
+# 🚀 CI/CD Pipeline
 
-The Jenkins pipeline is simplified for local use:
+The Jenkins pipeline automatically performs the following stages:
 
-- checkout the repository
-- install dependencies
-- build the React app
-- build the Docker image
-- load the image into Minikube
-- deploy the updated image to Kubernetes
+### Stage 1
 
-## GitHub webhook to Jenkins
+Checkout Source Code
 
-To trigger Jenkins automatically on every push to GitHub, follow these steps:
+### Stage 2
 
-1. Install the Jenkins plugins:
-   - GitHub Plugin
-   - GitHub Branch Source Plugin
+Install Dependencies
 
-2. In Jenkins, create or open your pipeline job and set the repository URL to your GitHub repo.
+```bash
+npm install
+```
 
-3. In the job configuration, enable the build trigger:
-   - Build Triggers → GitHub hook trigger for GITScm polling
+---
 
-4. In GitHub, go to your repository → Settings → Webhooks → Add webhook.
+### Stage 3
 
-5. Use these values:
-   - Payload URL: http://<your-public-jenkins-host>/github-webhook/
-   - Content type: application/json
-   - Secret: optional
-   - Events: Just the push event
+Unit Testing
 
-6. Because Jenkins is running locally on your Mac, GitHub needs a reachable public URL. Use a tunnel such as ngrok, Cloudflare Tunnel, or Tailscale to expose your local Jenkins instance.
+```bash
+npm test
+```
 
-Example with ngrok:
+---
+
+### Stage 4
+
+SonarCloud Analysis
+
+Performs static code quality analysis.
+
+---
+
+### Stage 5
+
+Trivy Filesystem Scan
+
+Scans project files for vulnerabilities.
+
+---
+
+### Stage 6
+
+Docker Build
+
+```bash
+docker build -t bablualam/youtube-clone .
+```
+
+---
+
+### Stage 7
+
+Trivy Image Scan
+
+Scans Docker image for security vulnerabilities.
+
+---
+
+### Stage 8
+
+Push Image
+
+```bash
+docker push bablualam/youtube-clone
+```
+
+---
+
+### Stage 9
+
+Deploy to Kubernetes
+
+```bash
+kubectl apply -f k8s/
+```
+
+---
+
+### Stage 10
+
+Verify Deployment
+
+```bash
+kubectl get pods -n youtube
+```
+
+---
+
+# ☁ Infrastructure as Code (Terraform)
+
+Infrastructure is managed using Terraform modules.
+
+Provisioned Resources:
+
+- VPC
+- Public Subnet
+- Internet Gateway
+- Route Table
+- Security Groups
+- Jenkins EC2
+- Minikube EC2 (Optional)
+- S3 Backend
+- DynamoDB State Locking
+
+Terraform Backend
+
+```hcl
+backend "s3" {
+  bucket = "terraform-state"
+  key = "terraform.tfstate"
+  region = "us-east-1"
+}
+```
+
+---
+
+# 🐳 Docker
+
+Build Image
+
+```bash
+docker build -t youtube-clone .
+```
+
+Run Container
+
+```bash
+docker run -d -p 3000:80 youtube-clone
+```
+
+---
+
+# ☸ Kubernetes
+
+Deploy
+
+```bash
+kubectl apply -f k8s/
+```
+
+Verify
+
+```bash
+kubectl get all -n youtube
+```
+
+Rolling Update
+
+```bash
+kubectl rollout status deployment/youtube-clone -n youtube
+```
+
+Rollback
+
+```bash
+kubectl rollout undo deployment/youtube-clone -n youtube
+```
+
+---
+
+# 📊 Monitoring
+
+Monitoring stack includes:
+
+- Prometheus
+- Grafana
+
+Verify
+
+```bash
+kubectl get pods -A
+```
+
+---
+
+# 🔗 GitHub Webhook
+
+To automatically trigger Jenkins builds on every push:
+
+## Start ngrok
 
 ```bash
 ngrok http 8080
 ```
 
-Then use the generated HTTPS URL in the webhook payload URL.
+Example URL
 
-## Monitoring
-
-Prometheus and Grafana can be installed with Helm if you want cluster visibility.
-
-Example:
-
-```bash
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm repo add grafana https://grafana.github.io/helm-charts
+```
+https://abcd1234.ngrok-free.app
 ```
 
-## Notes
+Configure GitHub Webhook
 
-- This setup is intended for local development and learning rather than production-grade cloud deployment.
-- The old Terraform and AWS-based infrastructure files have been removed from the main workflow.
+```
+Repository
 
-## Author
-Bablu Alam
-Cloud/DevOps Engineer
+↓
+
+Settings
+
+↓
+
+Webhooks
+
+↓
+
+Add Webhook
+```
+
+Payload URL
+
+```
+https://YOUR-NGROK-URL/github-webhook/
+```
+
+Content Type
+
+```
+application/json
+```
+
+Events
+
+```
+Just the push event
+```
+
+---
+
+# 🚀 Quick Start
+
+Clone Repository
+
+```bash
+git clone https://github.com/skbablualam/youtube_clone.git
+```
+
+Go to Project
+
+```bash
+cd youtube_clone
+```
+
+Start Minikube
+
+```bash
+minikube start --driver=docker
+```
+
+Deploy
+
+```bash
+kubectl apply -f k8s/
+```
+
+Access Application
+
+```bash
+minikube service youtube-clone-service -n youtube
+```
+
+---
+
+# 📸 Screenshots
+
+Add screenshots inside the **images/** folder.
+
+Recommended images:
+
+```text
+images/
+
+architecture.png
+
+jenkins-dashboard.png
+
+pipeline-success.png
+
+dockerhub.png
+
+kubernetes.png
+
+prometheus.png
+
+grafana.png
+
+application.png
+```
+
+---
+
+# 📝 Useful Commands
+
+Check Pods
+
+```bash
+kubectl get pods -n youtube
+```
+
+Describe Deployment
+
+```bash
+kubectl describe deployment youtube-clone -n youtube
+```
+
+View Logs
+
+```bash
+kubectl logs deployment/youtube-clone -n youtube
+```
+
+Delete Resources
+
+```bash
+kubectl delete -f k8s/
+```
+
+---
+
+# 🛡 Security
+
+This project uses:
+
+- SonarCloud
+- Trivy
+- Docker Best Practices
+- Non-root Containers
+- Kubernetes Rolling Updates
+
+---
+
+# 🎯 Learning Outcomes
+
+This project demonstrates practical experience with:
+
+- CI/CD Automation
+- Docker
+- Kubernetes
+- Jenkins
+- Terraform
+- AWS
+- GitHub Webhooks
+- DevSecOps
+- Infrastructure as Code
+- Monitoring & Observability
+
+---
+
+# 🚀 Future Enhancements
+
+- Amazon EKS Deployment
+- ArgoCD GitOps
+- Helm Charts
+- Horizontal Pod Autoscaler
+- Ingress Controller with TLS
+- AWS ALB Ingress Controller
+- Slack Notifications
+- Email Alerts
+- Blue/Green Deployment
+- Canary Deployment
+- Multi-Environment Support (Dev, QA, Prod)
+
+---
+
+# 🤝 Contributing
+
+Contributions, issues, and feature requests are welcome.
+
+Feel free to fork this repository and submit a pull request.
+
+---
+
+# 👨‍💻 Author
+
+**Bablu Alam**
+
+DevOps Engineer | AWS | Kubernetes | Terraform | Jenkins | Docker
+
+- GitHub: https://github.com/skbablualam
+- LinkedIn: https://linkedin.com/in/bablualam
+- Portfolio: https://skbablualam.github.io/
+
+---
+
+# ⭐ Support
+
+If you found this project helpful:
+
+⭐ Star this repository
+
+🍴 Fork the project
+
+📢 Share it with others
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License**.
+
+---
+
+<p align="center">
+
+### ⭐ If you like this project, don't forget to star the repository!
+
+Made with ❤️ by **Bablu Alam**
+
+</p>
+````
