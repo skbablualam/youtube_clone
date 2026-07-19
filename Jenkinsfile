@@ -19,6 +19,10 @@ pipeline {
         ansiColor('xterm')
     }
 
+    tools {
+        nodejs 'node20' // This must exactly match the name you set in Step 2
+    }
+
     stages {
         stage('Checkout Source') {
             steps {
