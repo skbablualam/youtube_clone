@@ -106,20 +106,13 @@ pipeline {
                     usernameVariable: 'DOCKER_USERNAME',
                     passwordVariable: 'DOCKER_PASSWORD'
                 )]) {
-                    sh '''
+                    sh """
                     echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
                     docker push ${IMAGE_NAME}:${IMAGE_TAG}
                     docker push ${IMAGE_NAME}:latest
                     docker logout
-                    '''
+                    """
                 }
-            }
-        }
-
-        stage('Load Image into Minikube') {
-            steps {
-                echo 'Loading image into Minikube...'
-                sh "minikube image load ${IMAGE_NAME}:${IMAGE_TAG}"
             }
         }
 
