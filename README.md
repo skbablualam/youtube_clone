@@ -661,16 +661,6 @@ This helps detect:
 
 ---
 
-## 🎥 Video Player
-
-<p align="center">
-
-<img src="images/demo" width="100%">
-
-</p>
-
----
-
 ## 🚀 Jenkins Pipeline
 
 <p align="center">
