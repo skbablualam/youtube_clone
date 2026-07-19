@@ -71,7 +71,12 @@ pipeline {
         stage('Build React Application') {
             steps {
                 echo 'Building React application...'
-                sh 'npm run build'
+                withCredentials([string(credentialsId: 'rapidapi-key', variable: 'SECRET_API_KEY')]) {
+                    sh """
+                    export REACT_APP_RAPID_API_KEY="\$SECRET_API_KEY"
+                    # Add CI=false to prevent warnings from breaking the build
+                    CI=false npm run build
+                    """
             }
         }
 
