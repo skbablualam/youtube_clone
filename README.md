@@ -704,12 +704,6 @@ A complete walkthrough of the project demonstrating:
 - Docker Push
 - Kubernetes Deployment
 
-<p align="center">
-
-<img src="images/demo" width="100%">
-
-</p>
-
 ---
 
 # 🩺 Troubleshooting
