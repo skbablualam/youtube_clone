@@ -101,20 +101,18 @@ pipeline {
             steps {
                 echo 'Logging into Docker Hub...'
 
-                withCredentials([
-                    usernamePassword(
-                        credentialsId: 'dockerhub',
-                        usernameVariable: 'DOCKER_USERNAME',
-                        passwordVariable: 'DOCKER_PASSWORD'
-                )
-           ])     {
+                withCredentials([usernamePassword(
+                    credentialsId: 'dockerhub',
+                    usernameVariable: 'DOCKER_USERNAME',
+                    passwordVariable: 'DOCKER_PASSWORD'
+                )]) {
                     sh '''
                     echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-                    docker push '${IMAGE_NAME}:${IMAGE_TAG}'
-                    docker push '${IMAGE_NAME}:latest'
+                    docker push ${IMAGE_NAME}:${IMAGE_TAG}
+                    docker push ${IMAGE_NAME}:latest
                     docker logout
                     '''
-           }
+                }
             }
         }
 
