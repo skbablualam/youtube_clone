@@ -3,11 +3,11 @@ FROM jenkins/jenkins:lts-jdk21
 
 USER root
 
-# Install prerequisites required by Debian Trixie (removed software-properties-common)
+# Install prerequisites
 RUN apt-get update && \
     apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release wget
 
-# Install Docker CLI (using the modern keyring approach)
+# Install Docker CLI
 RUN install -m 0755 -d /etc/apt/keyrings && \
     curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
     chmod a+r /etc/apt/keyrings/docker.gpg && \
@@ -20,6 +20,10 @@ RUN wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --
     echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main" | tee -a /etc/apt/sources.list.d/trivy.list && \
     apt-get update && \
     apt-get install -y trivy
+
+# Install Kubectl
+RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
+    install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
 # Create docker group and add jenkins user
 RUN groupadd -g 999 docker || true && \

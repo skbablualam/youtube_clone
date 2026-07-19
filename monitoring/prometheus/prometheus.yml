@@ -12,103 +12,63 @@ global:
 rule_files: []
 
 scrape_configs:
-
-################################################################################
-# Prometheus Server
-################################################################################
-
+  # ---------------------------------------------------------
+  # Prometheus Server
+  # ---------------------------------------------------------
   - job_name: "prometheus"
-
     static_configs:
-      - targets:
-          - "localhost:9090"
+      - targets: ["localhost:9090"]
 
-################################################################################
-# Jenkins Server Node Exporter
-################################################################################
-
+  # ---------------------------------------------------------
+  # Jenkins Server (Running via Docker on Mac)
+  # ---------------------------------------------------------
   - job_name: "jenkins-node-exporter"
-
     static_configs:
-      - targets:
-          - "JENKINS_PUBLIC_IP:9100"
+      - targets: ["host.docker.internal:9100"]
 
-################################################################################
-# Minikube Node Exporter
-################################################################################
-
-  - job_name: "minikube-node-exporter"
-
-    static_configs:
-      - targets:
-          - "MINIKUBE_PUBLIC_IP:9100"
-
-################################################################################
-# Kubernetes API Server
-################################################################################
-
+  # ---------------------------------------------------------
+  # Kubernetes API Server
+  # ---------------------------------------------------------
   - job_name: "kubernetes-api"
-
     scheme: https
-
     tls_config:
       insecure_skip_verify: true
-
     bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-
     kubernetes_sd_configs:
       - role: endpoints
-
     relabel_configs:
-
-      - source_labels:
-          - __meta_kubernetes_namespace
-          - __meta_kubernetes_service_name
-
+      - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name]
         action: keep
         regex: default;kubernetes
 
-################################################################################
-# Kubernetes Nodes
-################################################################################
-
+  # ---------------------------------------------------------
+  # Kubernetes Nodes (Handles Minikube automatically)
+  # ---------------------------------------------------------
   - job_name: "kubernetes-nodes"
-
     scheme: https
-
     tls_config:
       insecure_skip_verify: true
-
     bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-
     kubernetes_sd_configs:
       - role: node
 
-################################################################################
-# Kubernetes Pods
-################################################################################
-
+  # ---------------------------------------------------------
+  # Kubernetes Pods
+  # ---------------------------------------------------------
   - job_name: "kubernetes-pods"
-
     kubernetes_sd_configs:
       - role: pod
 
-################################################################################
-# kube-state-metrics
-################################################################################
-
+  # ---------------------------------------------------------
+  # kube-state-metrics
+  # ---------------------------------------------------------
   - job_name: "kube-state-metrics"
-
     static_configs:
-      - targets:
-          - "kube-state-metrics:8080"
+      - targets: ["kube-state-metrics.monitoring.svc.cluster.local:8080"]
 
-################################################################################
-# cAdvisor
-################################################################################
-
+  # ---------------------------------------------------------
+  # cAdvisor
+  # ---------------------------------------------------------
   - job_name: "cadvisor"
-
     static_configs:
-      - targets:
-          - "cadvisor:8080"
+      - targets: ["cadvisor:8080"]
