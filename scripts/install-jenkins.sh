@@ -27,10 +27,11 @@ docker volume create "${JENKINS_HOME_VOLUME}" >/dev/null
 echo "Starting Jenkins in Docker..."
 docker run -d \
   --name "${CONTAINER_NAME}" \
+  --restart unless-stopped \
   -p "${JENKINS_PORT}:8080" \
   -p "${AGENT_PORT}:50000" \
   -v "${JENKINS_HOME_VOLUME}:/var/jenkins_home" \
-  jenkins/jenkins:lts-jdk17
+  jenkins/jenkins:lts-jdk21
 
 echo "Jenkins is starting up."
 echo "Open http://localhost:8080"

@@ -1,5 +1,4 @@
 pipeline {
-
     agent any
 
     triggers {
@@ -7,11 +6,12 @@ pipeline {
     }
 
     environment {
-        APP_NAME      = "youtube-clone"
-        IMAGE_NAME    = "youtube-clone"
-        IMAGE_TAG     = "${BUILD_NUMBER}"
-        NAMESPACE     = "youtube"
-        SONAR_PROJECT = "youtube-clone"
+        APP_NAME        = 'youtube-clone'
+        DOCKERHUB_USER  = 'skbablualam03031997'
+        IMAGE_NAME      = "${DOCKERHUB_USER}/youtube_clone"
+        IMAGE_TAG       = "${BUILD_NUMBER}"
+        NAMESPACE       = 'youtube'
+        SONAR_PROJECT   = 'youtube_clone'
     }
 
     options {
@@ -20,24 +20,23 @@ pipeline {
     }
 
     stages {
-
         stage('Checkout Source') {
             steps {
-                echo "Checking out source code..."
+                echo 'Checking out source code...'
                 checkout scm
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                echo "Installing npm packages..."
+                echo 'Installing npm packages...'
                 sh 'npm install'
             }
         }
 
         stage('Run Unit Tests') {
             steps {
-                echo "Running unit tests..."
+                echo 'Running unit tests...'
                 sh 'npm test -- --watchAll=false || true'
             }
         }
@@ -47,10 +46,10 @@ pipeline {
                 expression { env.SONAR_TOKEN != null }
             }
             steps {
-                echo "Running SonarCloud analysis..."
+                echo 'Running SonarCloud analysis...'
                 sh '''
                 sonar-scanner \
-                  -Dsonar.projectKey=youtube-clone \
+                  -Dsonar.projectKey=skbablualam_youtube_clone \
                   -Dsonar.sources=src \
                   -Dsonar.host.url=https://sonarcloud.io \
                   -Dsonar.login=$SONAR_TOKEN || true
@@ -60,21 +59,22 @@ pipeline {
 
         stage('Trivy Filesystem Scan') {
             steps {
-                echo "Scanning project files..."
+                echo 'Scanning project files...'
                 sh 'trivy fs . || true'
             }
         }
 
         stage('Build React Application') {
             steps {
-                echo "Building React application..."
+                echo 'Building React application...'
                 sh 'npm run build'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                echo "Building Docker image..."
+                echo 'Building Docker image...'
+
                 sh """
                 docker build \
                 -t ${IMAGE_NAME}:${IMAGE_TAG} \
@@ -85,22 +85,45 @@ pipeline {
 
         stage('Trivy Image Scan') {
             steps {
-                echo "Scanning Docker image..."
-                sh "trivy image ${IMAGE_NAME}:${IMAGE_TAG} || true"
+                echo 'Scanning Docker image...'
+
+                sh """
+                trivy image ${IMAGE_NAME}:${IMAGE_TAG} || true
+                """
+            }
+        }
+
+        stage('Push Image to Docker Hub') {
+            steps {
+                echo 'Logging into Docker Hub...'
+
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub',
+                        usernameVariable: 'DOCKER_USERNAME',
+                        passwordVariable: 'DOCKER_PASSWORD'
+                )
+           ])     {
+                    sh '''
+                    echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+                    docker push '${IMAGE_NAME}:${IMAGE_TAG}'
+                    docker push '${IMAGE_NAME}:latest'
+                    docker logout
+                    '''
+           }
             }
         }
 
         stage('Load Image into Minikube') {
             steps {
-                echo "Loading image into Minikube..."
+                echo 'Loading image into Minikube...'
                 sh "minikube image load ${IMAGE_NAME}:${IMAGE_TAG}"
             }
         }
 
         stage('Deploy to Kubernetes') {
             steps {
-
-                echo "Deploying application..."
+                echo 'Deploying application...'
 
                 sh '''
                 kubectl apply -f k8s/namespace.yaml
@@ -131,19 +154,18 @@ pipeline {
     }
 
     post {
-
         success {
-            echo ""
-            echo "======================================="
-            echo " Pipeline completed successfully!"
-            echo "======================================="
+            echo ''
+            echo '======================================='
+            echo ' Pipeline completed successfully!'
+            echo '======================================='
         }
 
         failure {
-            echo ""
-            echo "======================================="
-            echo " Pipeline failed!"
-            echo "======================================="
+            echo ''
+            echo '======================================='
+            echo ' Pipeline failed!'
+            echo '======================================='
         }
 
         always {

@@ -50,6 +50,7 @@ The primary goal of this project is to showcase an end-to-end DevOps workflow in
 ## Architecture Workflow
 
 ```text
+
 Developer
      │
      ▼
@@ -82,6 +83,7 @@ React YouTube Clone
 Prometheus
      │
 Grafana
+
 ```
 
 ---
@@ -125,6 +127,7 @@ Grafana
 # 📂 Project Structure
 
 ```text
+
 youtube_clone/
 
 ├── src/
@@ -162,6 +165,7 @@ youtube_clone/
 ├── Jenkinsfile
 ├── README.md
 └── package.json
+
 ```
 
 ---
@@ -179,7 +183,9 @@ Checkout Source Code
 Install Dependencies
 
 ```bash
+
 npm install
+
 ```
 
 ---
@@ -189,7 +195,9 @@ npm install
 Unit Testing
 
 ```bash
+
 npm test
+
 ```
 
 ---
@@ -215,7 +223,9 @@ Scans project files for vulnerabilities.
 Docker Build
 
 ```bash
+
 docker build -t bablualam/youtube-clone .
+
 ```
 
 ---
@@ -233,7 +243,9 @@ Scans Docker image for security vulnerabilities.
 Push Image
 
 ```bash
+
 docker push bablualam/youtube-clone
+
 ```
 
 ---
@@ -243,7 +255,9 @@ docker push bablualam/youtube-clone
 Deploy to Kubernetes
 
 ```bash
+
 kubectl apply -f k8s/
+
 ```
 
 ---
@@ -253,7 +267,9 @@ kubectl apply -f k8s/
 Verify Deployment
 
 ```bash
+
 kubectl get pods -n youtube
+
 ```
 
 ---
@@ -291,13 +307,17 @@ backend "s3" {
 Build Image
 
 ```bash
+
 docker build -t youtube-clone .
+
 ```
 
 Run Container
 
 ```bash
+
 docker run -d -p 3000:80 youtube-clone
+
 ```
 
 ---
@@ -307,25 +327,33 @@ docker run -d -p 3000:80 youtube-clone
 Deploy
 
 ```bash
+
 kubectl apply -f k8s/
+
 ```
 
 Verify
 
 ```bash
+
 kubectl get all -n youtube
+
 ```
 
 Rolling Update
 
 ```bash
+
 kubectl rollout status deployment/youtube-clone -n youtube
+
 ```
 
 Rollback
 
 ```bash
+
 kubectl rollout undo deployment/youtube-clone -n youtube
+
 ```
 
 ---
@@ -340,7 +368,9 @@ Monitoring stack includes:
 Verify
 
 ```bash
+
 kubectl get pods -A
+
 ```
 
 ---
@@ -352,18 +382,22 @@ To automatically trigger Jenkins builds on every push:
 ## Start ngrok
 
 ```bash
+
 ngrok http 8080
+
 ```
 
 Example URL
 
 ```
 https://abcd1234.ngrok-free.app
+
 ```
 
 Configure GitHub Webhook
 
 ```
+
 Repository
 
 ↓
@@ -377,24 +411,28 @@ Webhooks
 ↓
 
 Add Webhook
+
 ```
 
 Payload URL
 
 ```
 https://YOUR-NGROK-URL/github-webhook/
+
 ```
 
 Content Type
 
 ```
 application/json
+
 ```
 
 Events
 
 ```
 Just the push event
+
 ```
 
 ---
@@ -404,31 +442,41 @@ Just the push event
 Clone Repository
 
 ```bash
+
 git clone https://github.com/skbablualam/youtube_clone.git
+
 ```
 
 Go to Project
 
 ```bash
+
 cd youtube_clone
+
 ```
 
 Start Minikube
 
 ```bash
+
 minikube start --driver=docker
+
 ```
 
 Deploy
 
 ```bash
+
 kubectl apply -f k8s/
+
 ```
 
 Access Application
 
 ```bash
+
 minikube service youtube-clone-service -n youtube
+
 ```
 
 ---
@@ -466,25 +514,33 @@ application.png
 Check Pods
 
 ```bash
+
 kubectl get pods -n youtube
+
 ```
 
 Describe Deployment
 
 ```bash
+
 kubectl describe deployment youtube-clone -n youtube
+
 ```
 
 View Logs
 
 ```bash
+
 kubectl logs deployment/youtube-clone -n youtube
+
 ```
 
 Delete Resources
 
 ```bash
+
 kubectl delete -f k8s/
+
 ```
 
 ---
